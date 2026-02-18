@@ -216,6 +216,23 @@ body { background: #1a1a2e; color: #e0e0e0; font-family: 'Courier New', monospac
   </div>
 
   <div id="sidebar">
+    <!-- Target Reference -->
+    <div class="sidebar-section" id="target-ref-section" style="display:none;">
+      <h3>Target Reference</h3>
+      <div style="display:flex;align-items:center;gap:16px;justify-content:center;">
+        <div style="text-align:center;">
+          <canvas id="ref-target" width="48" height="56"></canvas>
+          <div style="font-size:10px;color:#00ff88;margin-top:2px;">TARGET</div>
+          <div style="font-size:9px;color:#7a7a9a;">cross + pip</div>
+        </div>
+        <div style="text-align:center;">
+          <canvas id="ref-decoy" width="48" height="56"></canvas>
+          <div style="font-size:10px;color:#ff4444;margin-top:2px;">DECOY</div>
+          <div style="font-size:9px;color:#7a7a9a;">square center</div>
+        </div>
+      </div>
+    </div>
+
     <!-- AI Mode -->
     <div class="sidebar-section">
       <h3>AI Assistance</h3>
@@ -321,7 +338,7 @@ const LEVELS = [
     desc: 'Locate mobile SAM launchers among hangars, fuel trucks, and decoy vehicles in the open desert.',
     targetType: 'SAM Launcher',
     targetCount: 5,
-    decoyCount: 8,
+    decoyCount: 20,
     clutterCount: 30,
     time: 90,
     width: 1600,
@@ -334,7 +351,7 @@ const LEVELS = [
     desc: 'Find hidden radar dishes on rooftops in a dense urban environment with heavy visual clutter.',
     targetType: 'Radar Dish',
     targetCount: 6,
-    decoyCount: 10,
+    decoyCount: 25,
     clutterCount: 40,
     time: 120,
     width: 1800,
@@ -347,7 +364,7 @@ const LEVELS = [
     desc: 'Identify command tents beneath dense canopy. Shadows and foliage make detection difficult.',
     targetType: 'Command Tent',
     targetCount: 4,
-    decoyCount: 7,
+    decoyCount: 18,
     clutterCount: 50,
     time: 100,
     width: 1600,
@@ -519,9 +536,20 @@ function renderBattlefield() {
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // Small center mark
-      ctx.fillStyle = obj.isTarget ? '#4a5a2a' : '#4a5a3a';
-      ctx.fillRect(-3, -3, 6, 6);
+      // Center mark — targets get a cross, decoys get a square
+      if (obj.isTarget) {
+        // Cross/plus mark (distinguishing feature)
+        ctx.fillStyle = '#4a5a2a';
+        ctx.fillRect(-4, -1, 8, 2); // horizontal bar
+        ctx.fillRect(-1, -4, 2, 8); // vertical bar
+        // Tiny pip at top vertex (1-2px antenna nub)
+        ctx.fillStyle = '#3a4a1a';
+        ctx.fillRect(-1, -s - 2, 2, 3);
+      } else {
+        // Plain square mark (decoy)
+        ctx.fillStyle = '#4a5a3a';
+        ctx.fillRect(-3, -3, 6, 6);
+      }
 
       // Subtle shadow
       ctx.fillStyle = 'rgba(0,0,0,0.15)';
@@ -894,6 +922,54 @@ function performAIScan() {
   updateMarkerPositions();
 }
 
+function renderTargetReference() {
+  // Draw an example real target
+  const tCanvas = document.getElementById('ref-target');
+  const tCtx = tCanvas.getContext('2d');
+  tCtx.clearRect(0, 0, 48, 56);
+  // Background swatch from level palette
+  tCtx.fillStyle = State.level ? State.level.palette.ground : '#d4a853';
+  tCtx.fillRect(0, 0, 48, 56);
+  tCtx.save();
+  tCtx.translate(24, 28);
+  // Diamond
+  const s = 12;
+  tCtx.fillStyle = '#556b2f';
+  tCtx.beginPath();
+  tCtx.moveTo(0, -s); tCtx.lineTo(s, 0); tCtx.lineTo(0, s); tCtx.lineTo(-s, 0);
+  tCtx.closePath(); tCtx.fill();
+  tCtx.strokeStyle = 'rgba(0,0,0,0.3)'; tCtx.lineWidth = 1; tCtx.stroke();
+  // Cross center mark
+  tCtx.fillStyle = '#4a5a2a';
+  tCtx.fillRect(-4, -1, 8, 2);
+  tCtx.fillRect(-1, -4, 2, 8);
+  // Pip at top
+  tCtx.fillStyle = '#3a4a1a';
+  tCtx.fillRect(-1, -s - 2, 2, 3);
+  tCtx.restore();
+
+  // Draw an example decoy
+  const dCanvas = document.getElementById('ref-decoy');
+  const dCtx = dCanvas.getContext('2d');
+  dCtx.clearRect(0, 0, 48, 56);
+  dCtx.fillStyle = State.level ? State.level.palette.ground : '#d4a853';
+  dCtx.fillRect(0, 0, 48, 56);
+  dCtx.save();
+  dCtx.translate(24, 28);
+  const sd = 11;
+  dCtx.fillStyle = '#5a6b3f';
+  dCtx.beginPath();
+  dCtx.moveTo(0, -sd); dCtx.lineTo(sd, 0); dCtx.lineTo(0, sd); dCtx.lineTo(-sd, 0);
+  dCtx.closePath(); dCtx.fill();
+  dCtx.strokeStyle = 'rgba(0,0,0,0.3)'; dCtx.lineWidth = 1; dCtx.stroke();
+  // Square center mark
+  dCtx.fillStyle = '#4a5a3a';
+  dCtx.fillRect(-3, -3, 6, 6);
+  dCtx.restore();
+
+  document.getElementById('target-ref-section').style.display = '';
+}
+
 function clearAIHighlights() {
   document.querySelectorAll('.ai-highlight').forEach(el => el.remove());
   State.aiHighlights = [];
@@ -1004,6 +1080,7 @@ function startMission() {
 
   // Render
   renderBattlefield();
+  renderTargetReference();
 
   // Start timer
   startTimer();
