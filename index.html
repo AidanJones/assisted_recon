@@ -337,12 +337,12 @@ const LEVELS = [
     name: 'Desert Airfield',
     desc: 'Locate mobile SAM launchers among hangars, fuel trucks, and decoy vehicles in the open desert.',
     targetType: 'SAM Launcher',
-    targetCount: 5,
-    decoyCount: 20,
-    clutterCount: 30,
-    time: 90,
-    width: 1600,
-    height: 1200,
+    targetCount: 8,
+    decoyCount: 45,
+    clutterCount: 70,
+    time: 60,
+    width: 3200,
+    height: 2400,
     palette: { ground: '#d4a853', groundVar: '#c49843', structure: '#8B7355', road: '#a09080' },
   },
   {
@@ -350,12 +350,12 @@ const LEVELS = [
     name: 'Urban Combat Zone',
     desc: 'Find hidden radar dishes on rooftops in a dense urban environment with heavy visual clutter.',
     targetType: 'Radar Dish',
-    targetCount: 6,
-    decoyCount: 25,
-    clutterCount: 40,
-    time: 120,
-    width: 1800,
-    height: 1400,
+    targetCount: 10,
+    decoyCount: 55,
+    clutterCount: 90,
+    time: 60,
+    width: 3600,
+    height: 2800,
     palette: { ground: '#5a5a6a', groundVar: '#4a4a5a', structure: '#3a3a4a', road: '#6a6a7a' },
   },
   {
@@ -363,12 +363,12 @@ const LEVELS = [
     name: 'Jungle Encampment',
     desc: 'Identify command tents beneath dense canopy. Shadows and foliage make detection difficult.',
     targetType: 'Command Tent',
-    targetCount: 4,
-    decoyCount: 18,
-    clutterCount: 50,
-    time: 100,
-    width: 1600,
-    height: 1200,
+    targetCount: 7,
+    decoyCount: 40,
+    clutterCount: 100,
+    time: 60,
+    width: 3200,
+    height: 2400,
     palette: { ground: '#2d5a1e', groundVar: '#1d4a0e', structure: '#3a2a1a', road: '#4a3a2a' },
   },
 ];
@@ -889,14 +889,14 @@ function performAIScan() {
     logIntel(`Hawkeye: ${highlights.length} candidate targets identified`, 'info');
 
   } else {
-    // Sentinel: ~82% recall, ~8% false positive rate
+    // Sentinel: ~97% recall, ~3% false positive rate
     for (const obj of levelData.objects) {
-      if (obj.type === 'target' && !obj.found && rng() < 0.82) {
+      if (obj.type === 'target' && !obj.found && rng() < 0.97) {
         highlights.push({ x: obj.x, y: obj.y, isReal: true });
       }
     }
     for (const obj of levelData.objects) {
-      if (obj.type === 'decoy' && rng() < 0.08) {
+      if (obj.type === 'decoy' && rng() < 0.03) {
         highlights.push({ x: obj.x, y: obj.y, isReal: false });
       }
     }
